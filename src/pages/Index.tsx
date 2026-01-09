@@ -21,6 +21,30 @@ const Index = () => {
 
         {/* Main Card */}
         <OrnateCard className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
+          {/* Photo Section */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              {/* Outer decorative ring */}
+              <div className="w-44 h-44 md:w-52 md:h-52 rounded-full border-4 border-gold p-1 bg-gradient-to-br from-gold/20 to-maroon/10">
+                {/* Inner ring */}
+                <div className="w-full h-full rounded-full border-2 border-maroon/30 p-1">
+                  {/* Photo container */}
+                  <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center overflow-hidden border-2 border-gold/50">
+                    <div className="text-center text-muted-foreground">
+                      <div className="text-4xl mb-1">👤</div>
+                      <p className="text-xs font-hindi">फोटो</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Corner decorations */}
+              <div className="absolute -top-2 -left-2 text-gold text-xl">❀</div>
+              <div className="absolute -top-2 -right-2 text-gold text-xl">❀</div>
+              <div className="absolute -bottom-2 -left-2 text-gold text-xl">❀</div>
+              <div className="absolute -bottom-2 -right-2 text-gold text-xl">❀</div>
+            </div>
+          </div>
+
           {/* Name Section */}
           <div className="text-center mb-6">
             <h2 className="font-display text-3xl md:text-4xl text-maroon font-bold mb-1">
