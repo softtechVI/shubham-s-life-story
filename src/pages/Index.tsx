@@ -56,7 +56,7 @@ const Index = () => {
             <Entry label="Date of Birth" labelHi="जन्म तिथि" value="02 September 2005" valueHi="02 सितम्बर 2005" />
             <Entry label="Birth Place" labelHi="जन्म स्थान" value="Jaipur" valueHi="जयपुर" />
             <Entry label="Birth Time" labelHi="जन्म समय" value="08:48 PM" valueHi="रात 08:48 बजे" />
-            <Entry label="Height" labelHi="ऊँचाई" value="6 Feet 1 Inch" valueHi="6 फीट 1 इंच" />
+            <Entry label="Height" labelHi="ऊँचाई" value="6 Feet" valueHi="6 फीट" />
           </Chapter>
 
           <Chapter
@@ -128,17 +128,6 @@ const Index = () => {
             </div>
           </section>
         </main>
-
-        {/* Footer */}
-        <footer className="mt-24 pt-10 border-t border-[hsl(var(--rule))] text-center animate-fade-up">
-          <div className="inline-flex items-center gap-4">
-            <span className="text-[hsl(var(--gold))] text-lg">❀</span>
-            <span className="font-hindi text-lg text-[hsl(var(--ink-soft))] tracking-wider">
-              ॥ शुभ विवाह ॥
-            </span>
-            <span className="text-[hsl(var(--gold))] text-lg">❀</span>
-          </div>
-        </footer>
       </div>
     </div>
   );
