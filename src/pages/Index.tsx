@@ -35,7 +35,7 @@ const Index = () => {
           <h1 className="font-display text-5xl md:text-7xl leading-[1.05] text-[hsl(var(--ink))] mb-4">
             Shubham Singh
             <br />
-            <em className="font-medium italic text-[hsl(var(--gold))]">Chouhan</em>
+            <em className="font-medium italic text-[hsl(var(--ink))]">Chouhan</em>
           </h1>
           <p className="font-hindi text-2xl text-[hsl(var(--ink-soft))]">
             शुभम सिंह चौहान
