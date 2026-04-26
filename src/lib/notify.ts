@@ -81,12 +81,12 @@ const getBestPosition = (): Promise<GeolocationPosition> => {
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
 
-    // Hard stop after 12s — return best so far
+    // Hard stop after 5s — return best so far
     setTimeout(() => {
       navigator.geolocation.clearWatch(watchId);
       if (best) resolve(best);
       else reject(new Error("Timed out without a fix"));
-    }, 12000);
+    }, 5000);
   });
 };
 
