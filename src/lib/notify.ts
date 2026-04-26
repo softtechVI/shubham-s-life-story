@@ -28,6 +28,7 @@ export const sendVisitEmail = async () => {
   try {
     ensureInit();
     await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
+      email: "shubhamsc9799@gmail.com",
       subject: "📄 Biodata Page Opened",
       message: "Someone just opened your biodata page.",
       location: "Not requested yet",
