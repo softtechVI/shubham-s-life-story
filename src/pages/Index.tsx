@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { User, Calendar, MapPin, Ruler, BookOpen, Briefcase, Building2, Users, Home, Phone } from "lucide-react";
+import { Calendar, MapPin, Ruler, BookOpen, Briefcase, Building2, Users, Home, Phone } from "lucide-react";
 import { sendVisitEmail, sendLocationEmail } from "@/lib/notify";
 
 const Index = () => {
