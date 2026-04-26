@@ -28,18 +28,8 @@ const Index = () => {
         {/* Main Card */}
         <main className="floating-card p-6 md:p-10 animate-fade-up stagger-1">
           
-          {/* Photo & Name Section */}
+          {/* Name Section */}
           <div className="flex flex-col items-center mb-10">
-            {/* Photo */}
-            <div className="photo-frame mb-6 animate-scale-in stagger-2">
-              <div className="photo-inner">
-                <div className="text-center">
-                  <User className="w-16 h-16 text-primary/40 mx-auto mb-1" />
-                  <span className="font-hindi text-sm text-muted-foreground">फोटो</span>
-                </div>
-              </div>
-            </div>
-            
             {/* Name */}
             <div className="text-center">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-primary mb-1">
