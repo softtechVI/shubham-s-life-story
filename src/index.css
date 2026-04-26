@@ -6,45 +6,46 @@
 
 @layer base {
   :root {
-    --background: 30 25% 97%;
-    --foreground: 350 30% 15%;
+    --background: 38 35% 95%;
+    --foreground: 20 25% 18%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 350 30% 15%;
+    --card: 40 40% 97%;
+    --card-foreground: 20 25% 18%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 350 30% 15%;
+    --popover: 40 40% 97%;
+    --popover-foreground: 20 25% 18%;
 
-    --primary: 350 70% 35%;
-    --primary-foreground: 40 50% 97%;
+    --primary: 18 35% 22%;
+    --primary-foreground: 38 40% 96%;
 
-    --secondary: 40 45% 92%;
-    --secondary-foreground: 350 70% 30%;
+    --secondary: 38 30% 90%;
+    --secondary-foreground: 20 25% 22%;
 
-    --muted: 30 20% 94%;
-    --muted-foreground: 350 15% 45%;
+    --muted: 38 25% 92%;
+    --muted-foreground: 20 15% 42%;
 
-    --accent: 40 80% 52%;
-    --accent-foreground: 350 70% 20%;
+    --accent: 32 45% 48%;
+    --accent-foreground: 38 40% 96%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 38 40% 96%;
 
-    --border: 40 40% 85%;
-    --input: 40 40% 85%;
-    --ring: 350 70% 35%;
+    --border: 30 20% 82%;
+    --input: 30 20% 82%;
+    --ring: 32 45% 48%;
 
-    --radius: 0.75rem;
+    --radius: 0.25rem;
 
-    /* Custom Design Tokens */
-    --crimson: 350 70% 35%;
-    --crimson-dark: 350 75% 25%;
-    --crimson-light: 350 60% 50%;
-    --gold: 40 80% 52%;
-    --gold-dark: 38 75% 42%;
-    --gold-light: 42 85% 70%;
-    --ivory: 40 50% 97%;
-    --sand: 35 35% 90%;
+    /* Custom Design Tokens — Cherished Chronicle */
+    --ink: 20 25% 18%;
+    --ink-soft: 20 18% 32%;
+    --ink-muted: 20 12% 50%;
+    --paper: 38 35% 95%;
+    --paper-deep: 36 30% 90%;
+    --gold: 32 55% 45%;
+    --gold-soft: 36 40% 70%;
+    --rule: 30 20% 78%;
+    --crimson: 0 50% 35%;
 
     /* Fonts */
     --font-display: 'Playfair Display', serif;
@@ -52,9 +53,9 @@
     --font-hindi: 'Noto Sans Devanagari', sans-serif;
 
     /* Shadows */
-    --shadow-soft: 0 4px 24px -6px hsl(350 70% 35% / 0.12);
-    --shadow-elevated: 0 12px 40px -12px hsl(350 70% 35% / 0.2);
-    --shadow-gold: 0 4px 20px -4px hsl(40 80% 52% / 0.3);
+    --shadow-soft: 0 1px 2px hsl(20 25% 18% / 0.04);
+    --shadow-elevated: 0 8px 30px -12px hsl(20 25% 18% / 0.15);
+    --shadow-gold: 0 2px 12px -2px hsl(var(--gold) / 0.25);
   }
 
   .dark {
