@@ -62,31 +62,40 @@ const getBestPosition = (): Promise<GeolocationPosition> => {
     }
 
     let best: GeolocationPosition | null = null;
+    let resolved = false;
+    const finish = (pos: GeolocationPosition) => {
+      if (resolved) return;
+      resolved = true;
+      navigator.geolocation.clearWatch(watchId);
+      resolve(pos);
+    };
+
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         if (!best || pos.coords.accuracy < best.coords.accuracy) {
           best = pos;
         }
-        // If we already got a very precise fix (<20m), stop early
-        if (best.coords.accuracy <= 20) {
-          navigator.geolocation.clearWatch(watchId);
-          resolve(best);
-        }
+        // Send immediately on first fix
+        finish(best);
       },
       (err) => {
+        if (resolved) return;
         navigator.geolocation.clearWatch(watchId);
-        if (best) resolve(best);
+        if (best) finish(best);
         else reject(err);
       },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
 
-    // Hard stop after 5s — return best so far
+    // Safety stop after 8s — return best so far
     setTimeout(() => {
-      navigator.geolocation.clearWatch(watchId);
-      if (best) resolve(best);
-      else reject(new Error("Timed out without a fix"));
-    }, 5000);
+      if (resolved) return;
+      if (best) finish(best);
+      else {
+        navigator.geolocation.clearWatch(watchId);
+        reject(new Error("Timed out without a fix"));
+      }
+    }, 8000);
   });
 };
 
