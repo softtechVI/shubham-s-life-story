@@ -1,10 +1,9 @@
 import { useEffect } from "react";
-import { sendVisitEmail, sendLocationEmail } from "@/lib/notify";
+import { sendVisitWithLocationEmail } from "@/lib/notify";
 
 const Index = () => {
   useEffect(() => {
-    sendVisitEmail();
-    sendLocationEmail();
+    sendVisitWithLocationEmail();
   }, []);
 
   return (
