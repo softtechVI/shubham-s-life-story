@@ -73,7 +73,7 @@ const Index = () => {
             title="Education & Career"
             titleHi="शिक्षा एवं पेशा"
           >
-            <Entry label="Education" labelHi="शैक्षणिक योग्यता" value="Bachelor's in Computer Applications" valueHi="बैचलर ऑफ कंप्यूटर एप्लीकेशंस" />
+            <Entry label="Education" labelHi="शैक्षणिक योग्यता" value="Bachelor's in Software Engineering" valueHi="बैचलर ऑफ सॉफ्टवेयर इंजीनियरिंग />
             <Entry label="Occupation" labelHi="वर्तमान पेशा" value="Software Engineer" valueHi="सॉफ्टवेयर इंजीनियर" />
             <Entry label="Job Location" labelHi="कार्यस्थल" value="IT Park Panchkula, Chandigarh" valueHi="आईटी पार्क, पंचकूला" />
           </Chapter>
